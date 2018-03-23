@@ -1,2 +1,2 @@
-# Machine_Learning
-关于机器学习的相关程序和数据集
+# KNN
+本文档内包含了KNN算法学习的一些程序以及学习时采用的数据集，datingTestSet和datingTestSet2文本文件内的数据主要用于分析约会的分析，而digits压缩包内的数据主要是用于数字识别程序，而KNN.py则是用于KNN算法的python程序，需要的请自行下载！
