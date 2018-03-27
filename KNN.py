@@ -1,40 +1,70 @@
 # _*_ coding: utf-8 _*_ 
 '''
+Created on Month 22, 2018
+kNN: k Nearest Neighbors
+
+Input:      TargetSet: vector to compare to existing dataset (1xN)
+            RefDataSet: size m data set of known vectors (NxM)
+            Labels: data set labels (1xM vector)
+            K: number of neighbors to use for comparison (should be an odd number)
+            
+Output:     the most popular class label
+
 @author: liupu
 '''
-import numpy as np
-import operator
+import numpy as np 
+import pandas as pd 
 import matplotlib.pyplot as plt 
+import operator
 
-# 定义KNN分类算法函数
-def classification(TargetData,RefDataSet,labels,k):
-	'''
-	'''
-    RefDataSetSize = RefDataSet.shape[0]
-    DiffMat = np.tile(TargetData,(RefDataSetSize,1)) - RefDataSet
-    SquarDiffMat = DiffMat ** 2
-    SumSquareDiffMat = SquarDiffMat.sum(axis = 1)
-    Distance = SumSquareDiffMat ** 0.5
-    SortedDistIndicies = Distance.argsort()
-    ClassCount = {}
-    for ii in range(k):
-        VoteIndiviceLabel = labels[SortedDistIndicies[ii]]
-        ClassCount[VoteIndiviceLabel] = ClassCount.get(VoteIndiviceLabel,0) + 1
-        SortedClassCount = sorted(ClassCount.items(),
-                                  key = operator.itemgetter(1),reverse=True)
-        return SortedClassCount[0][0]
+# 创建分类器函数
+def Classification(TargetSet, RefDataSet, Labels, K):
+    DataSetSize = dataSet.shape[0]
+    Distances = (((RefDataSet - TargetSet) ** 2).sum(axis = 1)) ** 0.5
+    SortedDistIndicies = Distances.argsort()     
+    ClassCount={}          
+    for i in range(k):
+        VoteIlabel = Labels[SortedDistIndicies[i]]
+        ClassCount[VoteIlabel] = ClassCount.get(VoteIlabel,0) + 1
+    SortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
+    return SortedClassCount[0][0]
 
 # 创建数据集
-def createDataSet():
+def CreateDataSet():
     group = np.array([[3,104],[2,100],[1,81],[101,10],[99,5],[98,2]])
     labels = ['Love','Love','Love','Action','Action','Action']
     return group,labels
 
-# 绘制训练集数据分布
-plt.scatter(group[:,0],group[:,1])
-plt.xlabel('Action')
-plt.ylabel('Kiss')
-plt.show()
+# 创建数据导入函数
+def DataInput(filename):
+    DatingTestSet = pd.read_table(filename,header = None)
+    PriTestSet = DatingTestSet.iloc[:,[0,1,2]]
+    PriTestSet.columns = ['Flying','Game','Icecream']
+    LabelTestSet = DatingTestSet.iloc[:,3]
+    return PriTestSet,LabelTestSet
 
-# 运用分类函数对未知样本进行分类
-classification([0,0],group,labels,3)
+# 创建归一化函数
+def NormValue(dataset):
+    NormDataSet = np.zeros(dataset.shape)
+    minVals = dataset.min(0)
+    maxVals = dataset.max(0)
+    rangeVals = maxVals - minVals
+    m = dataset.shape[0]
+    NormDataSet = (dataset - minVals) / rangeVals
+    return NormDataSet,rangeVals,minVals
+
+# 创建分类测试函数  
+def datingClassTest():
+    TestRatio = 0.10      #hold out 10%
+    PriTestSet,LabelTestSet = DataInput('DatingTestSet.txt')       #load data setfrom file
+    NormData, ranges, minVals = NormValue(PriTestSet)
+    m = NormData.shape[0]
+    NumofTestSet = int(m*TestRatio)
+    errorCount = 0.0
+    for ii in range(NumofTestSet):
+        classifyResult = Classification(NormData.loc[ii],NormData.loc[NumofTestSet:m],LabelTestSet[NumofTestSet:m],3)
+        print("the classifier came back with: %d, the real answer is: %d" % (classifyResult, LabelTestSet[ii]))
+        if (classifyResult != LabelTestSet[ii]): 
+        	errorCount += 1.0
+    print("the total error rate is: %f" % (errorCount/float(NumofTestSet)))
+    print(errorCount)
