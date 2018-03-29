@@ -68,3 +68,39 @@ def datingClassTest():
         	errorCount += 1.0
     print("the total error rate is: %f" % (errorCount/float(NumofTestSet)))
     print(errorCount)
+
+# 创建图像向量化函数
+def image2vector(filename):
+    BinaryVector = np.zeros(1024)
+    ImageMatrix = pd.read_table(filename,header=None)
+    for ii in range(32):
+        for jj in range(32):
+            BinaryVector[32*ii+jj] = int(np.array(ImageMatrix.loc[0])[0][0])
+    return BinaryVector
+
+# 创建手写数字识别程序
+def handwritingClass():
+    hwLabels = [] 
+    TrainingFileNameList = os.listdir('./digits/trainingDigits')
+    NumofTrainingFile = len(TrainingFileNameList)
+    TrainingMat = np.zeros((NumofTrainingFile,1024))
+    for ii in range(NumofTrainingFile):
+        FileName = TrainingFileNameList[ii]
+        FileNameSplit = FileName.split('.')[0]
+        ClassFile = int(FileNameSplit.split('_')[0])
+        hwLabels.append(ClassFile)
+        TrainingMat[ii,:] = image2vector('./digits/trainingDigits/%s' %FileName)
+    TestFileNameList = os.listdir('./digits/testDigits')
+    NumofTestFile = len(TestFileNameList)
+    errorcount = 0
+    for jj in range(NumofTestFile):
+        FileName = TestFileNameList[jj]
+        FileNameSplit = FileName.split('.')[0]
+        ClassFile = int(FileNameSplit.split('_')[0])
+        TestVector = image2vector('./digits/testDigits/%s' %FileName)
+        ClassfyResult = classification(TestVector,TrainingMat,hwLabels,3)
+        print('The Result of ClassFy is:%d,the real answer is %d' %(ClassfyResult,ClassFile))
+        if ClassfyResult != ClassFile:
+            errorcount += 1
+    print('The total error is %d' %errorcount)
+    print('The total error rate is: %f' %(errorcount/NumofTestFile))
