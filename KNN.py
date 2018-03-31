@@ -1,6 +1,6 @@
 # _*_ coding: utf-8 _*_ 
 '''
-Created on Month 22, 2018
+Created on March 22, 2018
 kNN: k Nearest Neighbors
 
 Input:      TargetSet: vector to compare to existing dataset (1xN)
@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt 
 import operator
+import os
+from sklearn.neighbors import KNeighborsClassfier as Knn
 
 # 创建分类器函数
 def Classification(TargetSet, RefDataSet, Labels, K):
@@ -103,4 +105,31 @@ def handwritingClass():
         if ClassfyResult != ClassFile:
             errorcount += 1
     print('The total error is %d' %errorcount)
+    print('The total error rate is: %f' %(errorcount/NumofTestFile))
+
+# 创建基于scikit-learn的KNN分类函数
+def handwritingClassBasedsklearn():
+    hwLabels = []
+    TrainingFileNameList = os.listdir('./digits/trainingDigits')
+    NumofTrainingFile = len(TrainingFileNameList)
+    TrainingMat = np.zeros((NumofTrainingFile,1024))
+    for ii in range(NumofTrainingFile):
+        FileName = TrainingFileNameList[ii]
+        FileNameSplit = FileName.split('.')[0]
+        ClassFile = int(FileNameSplit.split('_')[0])
+        hwLabels.append(ClassFile)
+        TrainingMat[ii,:] = image2vector('./digits/trainingDigits/%s' %FileName)
+    neighbors = Knn(n_neighbos = 3 ,algorithm = 'auto')
+    neighbors.fit(TrainingMat,hwLabels)
+    TestFileNameList = os.listdir('./digits/testDigits')
+    NumofTestFile = len(TestFileNameList)
+    errorcount = 0
+    for jj in range(NumofTestFile):
+        FileName = TestFileNameList[jj]
+        FileNameSplit = FileName.split('.')[0]
+        ClassFile = int(FileNameSplit.split('_')[0])
+        TestVector = image2vector('./digits/testDigits/%s' %FileName)
+        ClassfyResult = neighbors.predict(TestVector)
+        if ClassfyResult != ClassFile:
+            errorcount += 1
     print('The total error rate is: %f' %(errorcount/NumofTestFile))
